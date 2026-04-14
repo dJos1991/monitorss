@@ -15,7 +15,7 @@ services:
     extends:
       file: ./docker-compose.base.yml
       service: bot-presence-service
-    image: ghcr.io/synzen/monitorss-bot-presence:${MONITORSS_VERSION:-7}
+    image: ghcr.io/djos1991/monitorss-bot-presence:main
     command: ["node", "dist/main.js"]
     env_file: *env-files
 
@@ -43,7 +43,7 @@ services:
     extends:
       file: ./docker-compose.base.yml
       service: discord-rest-listener-service
-    image: ghcr.io/synzen/monitorss-discord-rest-listener:${MONITORSS_VERSION:-7}
+    image: ghcr.io/djos1991/monitorss-discord-rest-listener:main
     command: ["node", "build/app.js"]
     env_file: *env-files
     environment:
@@ -53,7 +53,7 @@ services:
     extends:
       file: ./docker-compose.base.yml
       service: feed-requests-service
-    image: ghcr.io/synzen/monitorss-feed-requests:${MONITORSS_VERSION:-7}
+    image: ghcr.io/djos1991/monitorss-feed-requests:main
     command: ["node", "dist/main.js"]
     env_file: *env-files
     environment:
@@ -63,7 +63,7 @@ services:
     extends:
       file: ./docker-compose.base.yml
       service: feed-requests-postgres-migration
-    image: ghcr.io/synzen/monitorss-feed-requests:${MONITORSS_VERSION:-7}
+    image: ghcr.io/djos1991/monitorss-feed-requests:main
     command: "npm run migration:up"
     env_file: *env-files
     environment:
@@ -73,7 +73,7 @@ services:
     extends:
       file: ./docker-compose.base.yml
       service: user-feeds-next-service
-    image: ghcr.io/synzen/monitorss-user-feeds:${MONITORSS_VERSION:-7}
+    image: ghcr.io/djos1991/monitorss-user-feeds:main
     env_file: *env-files
     environment:
       - NODE_ENV=${NODE_ENV:-production}
@@ -82,7 +82,7 @@ services:
     extends:
       file: ./docker-compose.base.yml
       service: user-feeds-next-postgres-migration
-    image: ghcr.io/synzen/monitorss-user-feeds:${MONITORSS_VERSION:-7}
+    image: ghcr.io/djos1991/monitorss-user-feeds:main
     command: "node ./dist/src/scripts/run-migrations.js"
     env_file: *env-files
     environment:
@@ -92,14 +92,14 @@ services:
     extends:
       file: ./docker-compose.base.yml
       service: schedule-emitter-service
-    image: ghcr.io/synzen/monitorss-monolith:${MONITORSS_VERSION:-7}
+    image: ghcr.io/djos1991/monitorss-monolith:main
     command: ["node", "dist/scripts/schedule-emitter.js"]
     env_file: *env-files
     environment:
       - NODE_ENV=${NODE_ENV:-production}
 
   monolith:
-    image: ghcr.io/synzen/monitorss-monolith:${MONITORSS_VERSION:-7}
+    image: ghcr.io/djos1991/monitorss-monolith:main
     restart: on-failure:3
     depends_on:
       - mongo
@@ -111,7 +111,6 @@ services:
     environment:
       - BACKEND_API_NODE_ENV=${BACKEND_API_NODE_ENV:-local}
       - BACKEND_API_PORT=${BACKEND_API_PORT:-8000}
-      - BACKEND_API_DEFAULT_MAX_FEEDS=${BACKEND_API_DEFAULT_MAX_FEEDS:-999999}
       - BACKEND_API_USER_FEEDS_API_HOST=${BACKEND_API_USER_FEEDS_API_HOST:-http://user-feeds-service:5000}
       - BACKEND_API_FEED_REQUESTS_API_HOST=${BACKEND_API_FEED_REQUESTS_API_HOST:-http://feed-requests-service:5000}
       - BACKEND_API_FEED_USER_AGENT=${BACKEND_API_FEED_USER_AGENT:-MonitoRSS}
