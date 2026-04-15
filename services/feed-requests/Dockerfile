@@ -1,33 +1,26 @@
-FROM node:24 AS build
-
-# Node.js uses its own CA bundle; add system certs for sites like apps.usfa.fema.gov
-ENV NODE_EXTRA_CA_CERTS=/etc/ssl/certs/ca-certificates.crt
+FROM node:24-alpine AS build
 
 WORKDIR /usr/src/app
 
 COPY package*.json ./
 
-RUN npm install
+RUN npm ci
 
 COPY . ./
 
 RUN npm run build
 
-# There seems to be a bug where nest build completes before it actually finishes building
-RUN sleep 1
-
-FROM build AS build-prod
+FROM node:24-alpine AS build-prod
 
 WORKDIR /usr/src/app
-COPY --from=build /usr/src/app ./
 
-RUN npm prune --production
+COPY --from=build /usr/src/app/package*.json ./
 
-FROM node:24-slim AS prod
+RUN npm ci --omit=dev
 
-# Slim image doesn't include CA certs; install them for sites like apps.usfa.fema.gov
-RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates && rm -rf /var/lib/apt/lists/*
-ENV NODE_EXTRA_CA_CERTS=/etc/ssl/certs/ca-certificates.crt
+COPY --from=build /usr/src/app/dist ./dist
+
+FROM node:24-alpine AS prod
 
 WORKDIR /usr/src/app
 

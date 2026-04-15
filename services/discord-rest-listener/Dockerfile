@@ -1,21 +1,24 @@
-FROM node:24 AS build
+FROM node:24-alpine AS build
 
 WORKDIR /usr/src/app
 
 COPY package*.json ./
 
-RUN npm install
+RUN npm ci
 
 COPY . ./
 
-FROM build AS build-prod
-
-WORKDIR /usr/src/app
-COPY --from=build /usr/src/app ./
-
 RUN npm run build
 
-RUN npm prune --production
+FROM node:24-alpine AS build-prod
+
+WORKDIR /usr/src/app
+
+COPY --from=build /usr/src/app/package*.json ./
+
+RUN npm ci --omit=dev
+
+COPY --from=build /usr/src/app/build ./build
 
 FROM node:24-alpine AS prod
 

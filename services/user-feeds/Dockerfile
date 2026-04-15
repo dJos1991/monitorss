@@ -1,24 +1,24 @@
-FROM node:22 AS build
+FROM node:22-alpine AS build
 
 WORKDIR /usr/src/app
 
 COPY package*.json ./
 
-RUN npm install
+RUN npm ci
 
 COPY . ./
 
 RUN npm run build
 
-# There seems to be a bug where nest build completes before it actually finishes building
-RUN sleep 1
-
-FROM build AS build-prod
+FROM node:22-alpine AS build-prod
 
 WORKDIR /usr/src/app
-COPY --from=build /usr/src/app ./
 
-RUN npm prune --production
+COPY --from=build /usr/src/app/package*.json ./
+
+RUN npm ci --omit=dev
+
+COPY --from=build /usr/src/app/dist ./dist
 
 FROM node:22-alpine AS prod
 
